@@ -28,7 +28,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
     init: function() {
         MediumEditor.Extension.prototype.init.apply(this, arguments);
         this.disableEventHandling = false;
-        console.log("INIT");
+
         for (var i = 0; i < this.config.length; i++) {
 
             var conf = this.config[i];
@@ -44,7 +44,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
                     regex: regex
                 });
             }
-        } console.log(this.regexColors);
+        }
 
         this.subscribe('editableKeypress', this.onKeypress.bind(this));
         this.subscribe('editableBlur', this.onBlur.bind(this));
@@ -201,8 +201,6 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         var textContent = contenteditable.textContent,
             match = null,
             matches = [];
-
-        console.log(this.regexColors, this.regexColors.length);
 
         for (var i = 0; i < this.regexColors.length; i++) {
             var rc = this.regexColors[i];
