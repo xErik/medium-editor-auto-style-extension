@@ -9,7 +9,7 @@ In detail:
 3. whether <u>words only</u> are matched, or substrings, too.
 </ol>
 
-Try out the [live example](http://www.example.de/).
+Try out the [live example](https://xerik.github.io/medium-editor-auto-style-extension/).
 
 ### Installation
 
