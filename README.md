@@ -25,32 +25,32 @@ Try out the [live example](https://xerik.github.io/medium-editor-auto-style-exte
 <div class="editable"></div>
 
 var editor = new MediumEditor('.editable', {
-    extensions: {
-        'auto-highlight': new AutoStyleExtension(
-            config: [{
-                matchcase: false,
-                wordsonly: false,
-                styles: [{
-                    style: 'background-color:yellow;',
-                    words: ['yellow']
+        extensions: {
+            'auto-highlight': new AutoStyleExtension({
+                config: [{
+                    matchcase: false,
+                    wordsonly: false,
+                    styles: [{
+                        style: 'background-color:yellow;',
+                        words: ['yellow']
+                    }, {
+                        style: 'background-color:gray;',
+                        words: ['gray', 'grey']
+                    }]
                 }, {
-                    style: 'background-color:gray;',
-                    words: ['gray', 'grey']
-                }]
-            }, {
-                matchcase: true,
-                wordsonly: true,
-                styles: [{
-                    style: 'color:red;',
-                    words: ['RED']
-                }, {
-                    style: 'background-color:orange;',
-                    words: ['oraNGE']
-                }]
-            }]
-        )
-    }
-});
+                    matchcase: true,
+                    wordsonly: true,
+                    styles: [{
+                        style: 'color:red;',
+                        words: ['RED']
+                    }, {
+                        style: 'background-color:orange;',
+                        words: ['oraNGE']
+                    }]
+                }]}
+            )
+        }
+    });
 ```
 
 ## Contributers

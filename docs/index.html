@@ -28,35 +28,32 @@
         <h2>Code Example</h2>
         <pre>
         var editor = new MediumEditor('.editable', {
-            disableReturn: true,
-            disableExtraSpaces: true,
-            toolbar: false,
-            extensions: {
-                'auto-highlight': new AutoStyleExtension(
-                    config: [{
-                        matchcase: false,
-                        wordsonly: false,
-                        styles: [{
-                            style: 'background-color:yellow;',
-                            words: ['yellow']
-                        }, {
-                            style: 'background-color:gray;',
-                            words: ['gray', 'grey']
-                        }]
+        extensions: {
+            'auto-highlight': new AutoStyleExtension({
+                config: [{
+                    matchcase: false,
+                    wordsonly: false,
+                    styles: [{
+                        style: 'background-color:yellow;',
+                        words: ['yellow']
                     }, {
-                        matchcase: true,
-                        wordsonly: true,
-                        styles: [{
-                            style: 'color:red;',
-                            words: ['RED']
-                        }, {
-                            style: 'background-color:orange;',
-                            words: ['oraNGE']
-                        }]
+                        style: 'background-color:gray;',
+                        words: ['gray', 'grey']
                     }]
-                )
-            }
-        });
+                }, {
+                    matchcase: true,
+                    wordsonly: true,
+                    styles: [{
+                        style: 'color:red;',
+                        words: ['RED']
+                    }, {
+                        style: 'background-color:orange;',
+                        words: ['oraNGE']
+                    }]
+                }]}
+            )
+        }
+    });
     </pre>
     </div>
 
