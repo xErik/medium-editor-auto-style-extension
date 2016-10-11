@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-language" content="en">
+    <title>Auto-Highlight</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <script src="http://cdn.jsdelivr.net/medium-editor/latest/js/medium-editor.min.js"></script>
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/medium-editor/latest/css/medium-editor.min.css" type="text/css" media="screen" charset="utf-8">
+    <script src="auto-style.js"></script>
+</head>
+
+<body>
+
+    <h1>AutoStyleExtension for Medium Editor</h1>
+    <p><strong>AutoStyleExtension</strong> for <a href="https://yabwe.github.io/medium-editor/" target="_blank">Medium Editor</a> allows auto-styling of words.</p>
+    The auto-styling is defined in a configuration object, which gets passed to the constructur. In detail:
+    <ol>
+        <li><u>Words</u> and the <u>CSS style</u> to be applied to these words,</li>
+        <li>whether <u>case matching</u> is to be performed,</li>
+        <li>whether <u>words only</u> are matched, or substrings, too.</li>
+    </ol>
+
+    <div style="float:left;">
+        <h2>Code Example</h2>
+        <pre>
+        var editor = new MediumEditor('.editable', {
+            disableReturn: true,
+            disableExtraSpaces: true,
+            toolbar: false,
+            extensions: {
+                'auto-highlight': new AutoStyleExtension(
+                    config: [{
+                        matchcase: false,
+                        wordsonly: false,
+                        styles: [{
+                            style: 'background-color:yellow;',
+                            words: ['yellow']
+                        }, {
+                            style: 'background-color:gray;',
+                            words: ['gray', 'grey']
+                        }]
+                    }, {
+                        matchcase: true,
+                        wordsonly: true,
+                        styles: [{
+                            style: 'color:red;',
+                            words: ['RED']
+                        }, {
+                            style: 'background-color:orange;',
+                            words: ['oraNGE']
+                        }]
+                    }]
+                )
+            }
+        });
+    </pre>
+    </div>
+
+    <div style="float:right;">
+        <h2>Playground</h2>
+        <p>Play around with the words <i>yellow, gray, grey, RED and oraNGE</i>.
+            <div style="border:1px gray solid;" class="editable"></div>
+            <script>
+                var editor = new MediumEditor('.editable', {
+                    toolbar: false,
+                    extensions: {
+                        'auto-highlight': new AutoStyleExtension()
+                    }
+                });
+            </script>
+    </div>
+
+</body>
+
+</html>
