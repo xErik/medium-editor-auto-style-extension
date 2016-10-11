@@ -236,3 +236,9 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         }
     }
 });
+
+try {
+	module.exports = AutoStyleExtension;
+} catch (e) {
+	// ignore, catches if included by script-tag
+}

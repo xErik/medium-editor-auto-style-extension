@@ -15,8 +15,17 @@ Try out the [live example](https://xerik.github.io/medium-editor-auto-style-exte
 
 `npm install medium-editor-auto-style-extension`
 
-### Usage
+### Usage (via NPM)
 
+*index.js*
+```javascript
+MediumEditor = require('medium-editor');
+AutoStyleExtension = require('medium-editor-auto-style-extension');
+```
+
+### Usage (vi Header)
+
+*index.html*
 ```javascript
 
 <script type="text/javascript" src="<path>/medium-editor.js"></script>
