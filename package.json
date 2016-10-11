@@ -2,7 +2,7 @@
     "name": "medium-editor-auto-style-extension",
     "version": "0.1.0",
     "description": "AutoStyle is an extension for the Medium Editor.",
-    "main": "index.js",
+    "main": "auto-style.js",
     "dependencies": {},
     "devDependencies": {},
     "repository": {
