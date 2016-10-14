@@ -37,12 +37,13 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
 
             for (var s = 0; s < conf.styles.length; s++) {
                 var style = conf.styles[s].style;
-                var words = wordsonly + conf.styles[s].words.join('|') + wordsonly;
+                var words = wordsonly + '(' + conf.styles[s].words.join('|') + ')' + wordsonly;
                 var regex = new RegExp(words, matchcase);
                 this.regexColors.push({
                     style: style,
                     regex: regex
                 });
+                console.log(regex);
             }
         }
 
@@ -238,7 +239,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
 });
 
 try {
-	module.exports = AutoStyleExtension;
+    module.exports = AutoStyleExtension;
 } catch (e) {
-	// ignore, catches if included by script-tag
+    // ignore, catches if included by script-tag
 }
