@@ -43,7 +43,6 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
                     style: style,
                     regex: regex
                 });
-                console.log(regex);
             }
         }
 
