@@ -1,3 +1,10 @@
+/*String.prototype.toUnicode = function() {
+    return this.replace(/./g, function(c) {
+        return "\\u" + ('000' + c.charCodeAt(0).toString(16)).substr(-4);
+    });
+};*/
+
+
 function nodeIsNotInsideAnchorTag(node) {
     return !MediumEditor.util.getClosestTag(node, 'a');
 }
@@ -33,15 +40,13 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
 
             var conf = this.config[i];
             var matchcase = conf.matchcase === true ? 'g' : 'gi';
-            var wordsonly = conf.wordsonly === true ? '\\b' : '';
+            var wordsonly = conf.wordsonly === true ? ['(^|[\\s\\.,;\'"\\+!?-])', '([\\s\\.,;\'"\\+!?-]|$)'] : ['', ''];
 
             for (var s = 0; s < conf.styles.length; s++) {
-                var style = conf.styles[s].style;
-                var words = wordsonly + '(' + conf.styles[s].words.join('|') + ')' + wordsonly;
-                var regex = new RegExp(words, matchcase);
+                var words = wordsonly[0] + '(' + conf.styles[s].words.join('|') + ')' + wordsonly[1];
                 this.regexColors.push({
-                    style: style,
-                    regex: regex
+                    style: conf.styles[s].style,
+                    regex: new RegExp(words, matchcase)
                 });
             }
         }
@@ -123,23 +128,8 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             documentModified = false;
 
         for (var i = 0; i < spans.length; i++) {
-            var textContent = spans[i].textContent;
-            if (textContent.indexOf('://') === -1) {
-                textContent = MediumEditor.util.ensureUrlHasProtocol(textContent);
-            }
-            if (spans[i].getAttribute('data-href') !== textContent && nodeIsNotInsideAnchorTag(spans[i])) {
-                documentModified = true;
-                var trimmedTextContent = textContent.replace(/\s+$/, '');
-                if (spans[i].getAttribute('data-href') === trimmedTextContent) {
-                    var charactersTrimmed = textContent.length - trimmedTextContent.length,
-                        subtree = MediumEditor.util.splitOffDOMTree(spans[i], this.splitTextBeforeEnd(spans[i], charactersTrimmed));
-                    spans[i].parentNode.insertBefore(subtree, spans[i].nextSibling);
-                } else {
-                    // Some editing has happened to the span, so just remove it entirely. The user can put it back
-                    // around just the href content if they need to prevent it from linking
-                    MediumEditor.util.unwrap(spans[i], this.document);
-                }
-            }
+            MediumEditor.util.unwrap(spans[i], this.document);
+            documentModified = true;
         }
         return documentModified;
     },
@@ -230,7 +220,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         MediumEditor.util.moveTextRangeIntoElement(textNodes[0], textNodes[textNodes.length - 1], colored);
         colored.setAttribute('style', style);
         colored.insertBefore(span, colored.firstChild);
-        span.setAttribute('data-auto-style', 'true');
+        colored.setAttribute('data-auto-style', 'true');
         while (colored.childNodes.length > 1) {
             span.appendChild(colored.childNodes[1]);
         }
