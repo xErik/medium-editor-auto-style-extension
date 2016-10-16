@@ -1,16 +1,20 @@
 {
   "name": "medium-editor-auto-style-extension",
-  "version": "0.1.6",
+  "version": "1.0.0",
   "description": "AutoStyle is an extension for the Medium Editor.",
-  "main": "auto-style.js",
-  "dependencies": {},
+  "main": "src/auto-style.js",
+  "dependencies": {
+    "xregexp": "^3.1.1"
+  },
   "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/xErik/medium-editor-auto-style-extension"
   },
   "scripts": {
-    "docs": "cp auto-style.js docs/",
+    "server": "browser-sync start --server 'docs' --files 'docs' --reload-debounce 2000",
+    "build": "browserify src/auto-style.js -o docs/auto-style.js",
+    "watch": "watch 'npm run build' src/ --wait=1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -19,7 +23,8 @@
     "word",
     "highlight",
     "style",
-    "auto"
+    "auto",
+    "css"
   ],
   "author": "xErik",
   "license": "MIT"

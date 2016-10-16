@@ -8,9 +8,14 @@
     <meta http-equiv="content-language" content="en">
     <title>Auto-Highlight</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/medium-editor/latest/js/medium-editor.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/medium-editor/latest/css/medium-editor.min.css" type="text/css" media="screen" charset="utf-8">
+    <script src="medium-editor.min.js"></script>
+    <link rel="stylesheet" href="medium-editor.min.css" type="text/css" media="screen" charset="utf-8">
     <script src="auto-style.js"></script>
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+        }
+    </style>
 </head>
 
 <body>
@@ -19,57 +24,102 @@
     <p><strong>AutoStyleExtension</strong> for <a href="https://yabwe.github.io/medium-editor/" target="_blank">Medium Editor</a> allows auto-styling of words.</p>
     The auto-styling is defined in a configuration object, which gets passed to the constructur. In detail:
     <ol>
-        <li><u>Words</u> and the <u>CSS style</u> to be applied to these words,</li>
-        <li>whether <u>case matching</u> is to be performed,</li>
-        <li>whether <u>words only</u> are matched, or substrings, too.</li>
+        <li>Words and the CSS style to be applied to these words.</li>
+        <li>Words and the CSS class to be applied to these words.</li>
+        <li>Whether case matching is to be performed.</li>
+        <li>Whether words only are matched, or substrings, too.</li>
     </ol>
 
-    <div style="float:left;">
-        <h2>Code Example</h2>
-        <pre>
-        var editor = new MediumEditor('.editable', {
-        extensions: {
-            'auto-highlight': new AutoStyleExtension({
-                config: [{
-                    matchcase: false,
-                    wordsonly: false,
-                    styles: [{
-                        style: 'background-color:yellow;',
-                        words: ['yellow']
-                    }, {
-                        style: 'background-color:gray;',
-                        words: ['gray', 'grey']
-                    }]
-                }, {
-                    matchcase: true,
-                    wordsonly: true,
-                    styles: [{
-                        style: 'color:red;',
-                        words: ['RED']
-                    }, {
-                        style: 'background-color:orange;',
-                        words: ['oraNGE']
-                    }]
-                }]}
-            )
+    <h2>Playground</h2>
+    <p>Play around with the words <i>yellöw, gräy, gray, grey, RED, oraNGE, 汉语/漢語</i>.</p>
+    <style type="text/css">
+        .my-class {
+            border: 1px solid red;
+            background-color: yellow;
         }
-    });
-    </pre>
-    </div>
+    </style>
+    <div id="demo" style="border:1px gray solid;width:500px;" class="editable">yellöw, gräy, gray, grey, RED, oraNGE, 汉语/漢語</div>
+    <script>
 
-    <div style="float:right;">
-        <h2>Playground</h2>
-        <p>Play around with the words <i>yellow, gray, grey, RED and oraNGE</i>.
-            <div style="border:1px gray solid;" class="editable"></div>
-            <script>
-                var editor = new MediumEditor('.editable', {
-                    toolbar: false,
-                    extensions: {
-                        'auto-highlight': new AutoStyleExtension()
-                    }
-                });
-            </script>
-    </div>
+            var editor = new MediumEditor('.editable', {
+                extensions: {
+                    'auto-highlight': new AutoStyleExtension({
+
+                        config: {
+                            sectionA: {
+                                matchcase: false,
+                                wordsonly: false,
+                                class: 'my-class',
+                                style: 'color:red;',
+                                words: ['yellöw']
+                            },
+                            sectionB: {
+                                matchcase: true,
+                                wordsonly: true,
+                                style: 'color:green;background-color:red;font-weight:bold;',
+                                words: ['RED']
+                            },
+                            sectionC: {
+                                matchcase: false,
+                                wordsonly: false,
+                                style: 'background-color:#aaa;',
+                                words: ['gräy', 'gray', 'grey']
+                            },
+                            sectionD: {
+                                matchcase: true,
+                                wordsonly: true,
+                                style: 'background-color:orange;',
+                                words: ['oraNGE', '汉语/漢語']
+                            }
+                        }
+
+                    })
+                }
+            });
+    </script>
+    <p>(If deleting the content, make sure that the placeholder "Type your text" appears.
+    <br>The editor seems sometimes to remember the last HTML-color settings. Will look into it.)</p>
+
+    <h2>Configuration</h2>
+    <pre>
+&lt;style type="text/css"&gt;
+    .my-class {
+        border: 1px solid red;
+        background-color: yellow;
+    }
+&lt;/style&gt;
+
+&lt;script&gt;
+
+    config: {
+        sectionA: {
+            matchcase: false,
+            wordsonly: false,
+            class: 'my-class',
+            style: 'color:red;',
+            words: ['yellow']
+        },
+        sectionB: {
+            matchcase: true,
+            wordsonly: true,
+            style: 'color:red;',
+            words: ['RED']
+        },
+        sectionC: {
+            matchcase: false,
+            wordsonly: false,
+            style: 'background-color:gray;',
+            words: ['gray', 'grey']
+        },
+        sectionD: {
+            matchcase: true,
+            wordsonly: true,
+            style: 'background-color:orange;',
+            words: ['oraNGE', '汉语/漢語']
+        }
+    }
+&lt;/script&gt;
+    </pre>
 
 </body>
 

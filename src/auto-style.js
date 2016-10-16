@@ -1,62 +1,82 @@
-/*String.prototype.toUnicode = function() {
-    return this.replace(/./g, function(c) {
-        return "\\u" + ('000' + c.charCodeAt(0).toString(16)).substr(-4);
-    });
-};*/
-
+var XRegExp = require('xregexp');
 
 function nodeIsNotInsideAnchorTag(node) {
     return !MediumEditor.util.getClosestTag(node, 'a');
 }
 
 var AutoStyleExtension = MediumEditor.Extension.extend({
-    config: [{
-        matchcase: false,
-        wordsonly: false,
-        styles: [{
-            style: 'background-color:yellow;',
-            words: ['yellow']
-        }, {
+    // This config is here for documentary reasons.
+    // It will be overwritten upon initialization of AutoStyleExtension.
+    config: {
+        sectionA: {
+            matchcase: false,
+            wordsonly: false,
+            class: 'red-border',
+            words: ['yellöw']
+        },
+        sectionB: {
+            matchcase: true,
+            wordsonly: true,
+            style: 'color:green;background-color:red;',
+            words: ['RED']
+        },
+        sectionC: {
+            matchcase: false,
+            wordsonly: false,
             style: 'background-color:gray;',
             words: ['gray', 'grey']
-        }]
-    }, {
-        matchcase: true,
-        wordsonly: true,
-        styles: [{
-            style: 'color:red;',
-            words: ['RED']
-        }, {
+        },
+        sectionD: {
+            matchcase: true,
+            wordsonly: true,
             style: 'background-color:orange;',
             words: ['oraNGE']
-        }]
-    }],
+        }
+    },
+    getConfig: function() {
+        return this.config;
+    },
+    removeConfigSection: function(sectionName) {
+        delete this.config[sectionName];
+        this.processConfig();
+    },
+    setConfigSection: function(sectionName, sectionObject) {
+        this.config[sectionName] = sectionObject;
+        this.processConfig();
+    },
+    processConfig: function() {
+        this.regexColors = [];
+        var sectionKeys = Object.keys(this.config);
+        for (var k = 0; k < sectionKeys.length; k++) {
+
+            var sectionKey = sectionKeys[k];
+            var section = this.config[sectionKey];
+            var matchcase = section.matchcase === true ? 'g' : 'gi';
+            var wordsonly = section.wordsonly === true ? ['(\\P{L}|^)', '(\\P{L}|$)'] : ['', ''];
+            var words = wordsonly[0] + '(' + section.words.join('|') + ')' + wordsonly[1];
+            this.regexColors.push({
+                style: section.style,
+                clazz: section.class,
+                regex: new XRegExp(words, matchcase)
+            });
+        }
+        this.getEditorElements().forEach(function(el) {
+            this.performStyling(el);
+        }, this);
+    },
     regexColors: [],
     init: function() {
         MediumEditor.Extension.prototype.init.apply(this, arguments);
         this.disableEventHandling = false;
 
-        for (var i = 0; i < this.config.length; i++) {
-
-            var conf = this.config[i];
-            var matchcase = conf.matchcase === true ? 'g' : 'gi';
-            var wordsonly = conf.wordsonly === true ? ['(^|[\\s\\.,;\'"\\+!?-])', '([\\s\\.,;\'"\\+!?-]|$)'] : ['', ''];
-
-            for (var s = 0; s < conf.styles.length; s++) {
-                var words = wordsonly[0] + '(' + conf.styles[s].words.join('|') + ')' + wordsonly[1];
-                this.regexColors.push({
-                    style: conf.styles[s].style,
-                    regex: new RegExp(words, matchcase)
-                });
-            }
-        }
+        this.processConfig();
 
         this.subscribe('editableKeypress', this.onKeypress.bind(this));
         this.subscribe('editableBlur', this.onBlur.bind(this));
     },
 
     onBlur: function(blurEvent, editable) {
-        this.performLinking(editable);
+        this.performStyling(editable);
     },
 
     onKeypress: function(keyPressEvent) {
@@ -64,20 +84,20 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             return;
         }
 
-        if (MediumEditor.util.isKey(keyPressEvent, [MediumEditor.util.keyCode.SPACE, MediumEditor.util.keyCode.ENTER])) {
-            clearTimeout(this.performLinkingTimeout);
+        if (MediumEditor.util.isKey(keyPressEvent, [MediumEditor.util.keyCode.TAB, MediumEditor.util.keyCode.DELETE, MediumEditor.util.keyCode.SPACE, MediumEditor.util.keyCode.ENTER])) {
+            clearTimeout(this.performStylingTimeout);
             // Saving/restoring the selection in the middle of a keypress doesn't work well...
-            this.performLinkingTimeout = setTimeout(function() {
+            this.performStylingTimeout = setTimeout(function() {
                 try {
                     var sel = this.base.exportSelection();
-                    if (this.performLinking(keyPressEvent.target)) {
+                    if (this.performStyling(keyPressEvent.target)) {
                         // pass true for favorLaterSelectionAnchor - this is needed for links at the end of a
                         // paragraph in MS IE, or MS IE causes the link to be deleted right after adding it.
                         this.base.importSelection(sel, true);
                     }
                 } catch (e) {
                     if (window.console) {
-                        window.console.error('Failed to perform Styleing', e);
+                        window.console.error('Failed to perform styling', e);
                     }
                     this.disableEventHandling = true;
                 }
@@ -85,9 +105,9 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         }
     },
 
-    performLinking: function(contenteditable) {
+    performStyling: function(contenteditable) {
         /*
-        Perform linking on blockElement basis, blockElements are HTML elements with text content and without
+        Perform styling on blockElement basis, blockElements are HTML elements with text content and without
         child element.
         Example:
         - HTML content
@@ -105,12 +125,13 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         */
         var blockElements = MediumEditor.util.splitByBlockElements(contenteditable),
             documentModified = false;
+
         if (blockElements.length === 0) {
             blockElements = [contenteditable];
         }
         for (var i = 0; i < blockElements.length; i++) {
-            documentModified = this.removeObsoleteAutoStyleSpans(blockElements[i]) || documentModified;
-            documentModified = this.performStyleingWithinElement(blockElements[i]) || documentModified;
+            documentModified = this.unwrapAutoStyleSpans(blockElements[i]) || documentModified;
+            documentModified = this.performStylingWithinElement(blockElements[i]) || documentModified;
         }
         this.base.events.updateInput(contenteditable, {
             target: contenteditable,
@@ -119,7 +140,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         return documentModified;
     },
 
-    removeObsoleteAutoStyleSpans: function(element) {
+    unwrapAutoStyleSpans: function(element) {
         if (!element || element.nodeType === 3) {
             return false;
         }
@@ -131,36 +152,11 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             MediumEditor.util.unwrap(spans[i], this.document);
             documentModified = true;
         }
+
         return documentModified;
     },
 
-    splitTextBeforeEnd: function(element, characterCount) {
-        var treeWalker = this.document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false),
-            lastChildNotExhausted = true;
-
-        // Start the tree walker at the last descendant of the span
-        while (lastChildNotExhausted) {
-            lastChildNotExhausted = treeWalker.lastChild() !== null;
-        }
-
-        var currentNode,
-            currentNodeValue,
-            previousNode;
-        while (characterCount > 0 && previousNode !== null) {
-            currentNode = treeWalker.currentNode;
-            currentNodeValue = currentNode.nodeValue;
-            if (currentNodeValue.length > characterCount) {
-                previousNode = currentNode.splitText(currentNodeValue.length - characterCount);
-                characterCount = 0;
-            } else {
-                previousNode = treeWalker.previousNode();
-                characterCount -= currentNodeValue.length;
-            }
-        }
-        return previousNode;
-    },
-
-    performStyleingWithinElement: function(element) {
+    performStylingWithinElement: function(element) {
         var matches = this.findStyleableText(element),
             linkCreated = false;
 
@@ -170,7 +166,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             if (this.shouldNotStyle(matchingTextNodes)) {
                 continue;
             }
-            this.createAutoStyle(matchingTextNodes, matches[matchIndex].style);
+            this.createAutoStyle(matchingTextNodes, matches[matchIndex].style, matches[matchIndex].clazz);
         }
         return linkCreated;
     },
@@ -178,10 +174,9 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
     shouldNotStyle: function(textNodes) {
         var shouldNotStyle = false;
         for (var i = 0; i < textNodes.length && shouldNotStyle === false; i++) {
-            // Do not link if the text node is either inside an anchor or inside span[data-auto-style]
-            shouldNotStyle = !!MediumEditor.util.traverseUp(textNodes[i], function(node) {
-                return node.nodeName.toLowerCase() === 'a' ||
-                    (node.getAttribute && node.getAttribute('data-auto-style') === 'true');
+            shouldNotStyle = MediumEditor.util.traverseUp(textNodes[i], function(node) {
+                return node.nodeName.toLowerCase() === 'span' &&
+                    node.getAttribute && node.getAttribute('data-auto-style') === 'true';
             });
         }
         return shouldNotStyle;
@@ -195,40 +190,62 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         for (var i = 0; i < this.regexColors.length; i++) {
             var rc = this.regexColors[i];
             var style = rc.style;
+            var clazz = rc.clazz;
             var linkRegExp = rc.regex;
 
             while ((match = linkRegExp.exec(textContent)) !== null) {
-                var matchOk = true,
-                    matchEnd = match.index + match[0].length;
 
-                if (matchOk) {
+                if (match.length === 2) {
+                    // wordsonly: false
+                    var matchEnd = match.index + match[0].length;
                     matches.push({
+                        clazz: clazz,
                         style: style,
                         start: match.index,
                         end: matchEnd
                     });
+                } else if (match.length === 4) {
+                    // wordsonly: true
+                    var start = match.index + match[1].length;
+                    var end = start + match[2].length;
+                    matches.push({
+                        clazz: clazz,
+                        style: style,
+                        start: start,
+                        end: end
+                    });
+                } else {
+                    if (window.console) {
+                        window.console.error('Cannot process: ' + match);
+                    }
                 }
-            }
 
+            }
         }
         return matches;
     },
 
-    createAutoStyle: function(textNodes, style) {
-        var colored = this.document.createElement('span'),
-            span = this.document.createElement('span');
+    createAutoStyle: function(textNodes, style, clazz) {
+        var colored = this.document.createElement('span');
         MediumEditor.util.moveTextRangeIntoElement(textNodes[0], textNodes[textNodes.length - 1], colored);
-        colored.setAttribute('style', style);
-        colored.insertBefore(span, colored.firstChild);
-        colored.setAttribute('data-auto-style', 'true');
-        while (colored.childNodes.length > 1) {
-            span.appendChild(colored.childNodes[1]);
+        if (style !== undefined) {
+            colored.setAttribute('style', style);
         }
+        if (clazz !== undefined) {
+            colored.setAttribute('class', clazz);
+        }
+        colored.setAttribute('data-auto-style', 'true');
     }
 });
 
 try {
+    window.AutoStyleExtension = AutoStyleExtension;
+} catch (e) {
+    // whatever
+}
+
+try {
     module.exports = AutoStyleExtension;
 } catch (e) {
-    // ignore, catches if included by script-tag
+    // whatever
 }
