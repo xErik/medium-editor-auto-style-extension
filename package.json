@@ -1,12 +1,14 @@
 {
   "name": "medium-editor-auto-style-extension",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "AutoStyle is an extension for the Medium Editor.",
   "main": "src/auto-style.js",
   "dependencies": {
     "xregexp": "^3.1.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "browser-sync": "^2.17.3"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/xErik/medium-editor-auto-style-extension"

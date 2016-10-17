@@ -1,9 +1,5 @@
 var XRegExp = require('xregexp');
 
-function nodeIsNotInsideAnchorTag(node) {
-    return !MediumEditor.util.getClosestTag(node, 'a');
-}
-
 var AutoStyleExtension = MediumEditor.Extension.extend({
     // This config is here for documentary reasons.
     // It will be overwritten upon initialization of AutoStyleExtension.
@@ -41,8 +37,10 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         this.processConfig();
     },
     setConfigSection: function(sectionName, sectionObject) {
-        this.config[sectionName] = sectionObject;
-        this.processConfig();
+        if (sectionObject.words && sectionObject.words.length > 0) {
+            this.config[sectionName] = sectionObject;
+            this.processConfig();
+        }
     },
     processConfig: function() {
         this.regexColors = [];
@@ -52,24 +50,30 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             var sectionKey = sectionKeys[k];
             var section = this.config[sectionKey];
             var matchcase = section.matchcase === true ? 'g' : 'gi';
-            var wordsonly = section.wordsonly === true ? ['(\\P{L}|^)', '(\\P{L}|$)'] : ['', ''];
+            var wordsonly = section.wordsonly === true ? ['(^|\\PL)', '(\\PL|$)'] : ['', ''];
             var words = wordsonly[0] + '(' + section.words.join('|') + ')' + wordsonly[1];
+
             this.regexColors.push({
                 style: section.style,
                 clazz: section.class,
-                regex: new XRegExp(words, matchcase)
+                regex: new XRegExp(words, matchcase) // new XRegExp(words, matchcase)
             });
         }
+    },
+
+    applyStyles: function() {
         this.getEditorElements().forEach(function(el) {
             this.performStyling(el);
         }, this);
     },
+
     regexColors: [],
     init: function() {
         MediumEditor.Extension.prototype.init.apply(this, arguments);
         this.disableEventHandling = false;
 
         this.processConfig();
+        this.applyStyles();
 
         this.subscribe('editableKeypress', this.onKeypress.bind(this));
         this.subscribe('editableBlur', this.onBlur.bind(this));
@@ -163,15 +167,15 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         for (var matchIndex = 0; matchIndex < matches.length; matchIndex++) {
             var matchingTextNodes = MediumEditor.util.findOrCreateMatchingTextNodes(this.document, element,
                 matches[matchIndex]);
-            if (this.shouldNotStyle(matchingTextNodes)) {
+            /*if (this.shouldNotStyle(matchingTextNodes)) {
                 continue;
-            }
+            }*/
             this.createAutoStyle(matchingTextNodes, matches[matchIndex].style, matches[matchIndex].clazz);
         }
         return linkCreated;
     },
 
-    shouldNotStyle: function(textNodes) {
+    /*shouldNotStyle: function(textNodes) {
         var shouldNotStyle = false;
         for (var i = 0; i < textNodes.length && shouldNotStyle === false; i++) {
             shouldNotStyle = MediumEditor.util.traverseUp(textNodes[i], function(node) {
@@ -180,61 +184,104 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             });
         }
         return shouldNotStyle;
-    },
+    },*/
 
     findStyleableText: function(contenteditable) {
-        var textContent = contenteditable.textContent,
+
+        var textContent = contenteditable.textContent.trim(),
             match = null,
             matches = [];
 
-        for (var i = 0; i < this.regexColors.length; i++) {
-            var rc = this.regexColors[i];
-            var style = rc.style;
-            var clazz = rc.clazz;
-            var linkRegExp = rc.regex;
+        if (textContent.length > 0) {
 
-            while ((match = linkRegExp.exec(textContent)) !== null) {
+            for (var i = 0; i < this.regexColors.length; i++) {
+                var rc = this.regexColors[i];
+                var style = rc.style;
+                var clazz = rc.clazz;
+                var linkRegExp = rc.regex;
+                var pos = 0;
 
-                if (match.length === 2) {
-                    // wordsonly: false
-                    var matchEnd = match.index + match[0].length;
-                    matches.push({
-                        clazz: clazz,
-                        style: style,
-                        start: match.index,
-                        end: matchEnd
-                    });
-                } else if (match.length === 4) {
-                    // wordsonly: true
-                    var start = match.index + match[1].length;
-                    var end = start + match[2].length;
-                    matches.push({
-                        clazz: clazz,
-                        style: style,
-                        start: start,
-                        end: end
-                    });
-                } else {
-                    if (window.console) {
-                        window.console.error('Cannot process: ' + match);
+                while((match = XRegExp.exec(textContent, linkRegExp, pos)) !== null) {
+
+                    pos = match.index + 1;
+
+                    if (match.length === 2) {
+                        // wordsonly: false
+                        var matchEnd = match.index + match[0].length;
+                        matches.push({
+                            word: match[0],
+                            clazz: clazz,
+                            style: style,
+                            start: match.index,
+                            end: matchEnd
+                        });
+                    } else if (match.length === 4) {
+                        // wordsonly: true
+                        var start = match.index + match[1].length;
+                        var end = start + match[2].length;
+                        matches.push({
+                            word: match[2],
+                            clazz: clazz,
+                            style: style,
+                            start: start,
+                            end: end
+                        });
+                    } else {
+                        if (window.console) {
+                            window.console.error('Cannot process: ' + match);
+                        }
                     }
-                }
 
+                }
             }
         }
+
         return matches;
     },
 
     createAutoStyle: function(textNodes, style, clazz) {
-        var colored = this.document.createElement('span');
-        MediumEditor.util.moveTextRangeIntoElement(textNodes[0], textNodes[textNodes.length - 1], colored);
-        if (style !== undefined) {
-            colored.setAttribute('style', style);
+
+        var node = MediumEditor.util.traverseUp(textNodes[0], function(node) {
+            var ret;
+            if (node.nodeName.toLowerCase() === 'span' &&
+                node.getAttribute && node.getAttribute('data-auto-style') === 'true') {
+                ret = node;
+            }
+            return ret;
+        });
+
+        if (node !== false) {
+
+            node = node;
+            //MediumEditor.util.moveTextRangeIntoElement(textNodes[0], textNodes[textNodes.length - 1], node);
+            if (style !== undefined) {
+                if (node.getAttribute('style') === null) {
+                    node.setAttribute('style', style);
+                } else {
+                    var s = node.getAttribute('style');
+                    node.setAttribute('style', style + ';' + s);
+                }
+
+            }
+            if (clazz !== undefined) {
+                node.className += ' ' + clazz;
+            }
+            node.setAttribute('data-auto-style', 'true');
+
+        } else {
+
+            node = this.document.createElement('span');
+            MediumEditor.util.moveTextRangeIntoElement(textNodes[0], textNodes[textNodes.length - 1], node);
+            if (style !== undefined) {
+                node.setAttribute('style', style);
+            }
+            if (clazz !== undefined) {
+                //node.setAttribute('class', clazz);
+                node.className += clazz;
+            }
+            node.setAttribute('data-auto-style', 'true');
+
         }
-        if (clazz !== undefined) {
-            colored.setAttribute('class', clazz);
-        }
-        colored.setAttribute('data-auto-style', 'true');
     }
 });
 

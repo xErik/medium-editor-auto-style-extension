@@ -1,6 +1,6 @@
 # AutoStyleExtension for Medium Editor
 
-<p style="color:red;">Version 1.0.0 is not backwards compatible.</p>
+<p style="color:red;">Version 2.0.0 is not backwards compatible.</p>
 
 **AutoStyleExtension** for [Medium Editor](https://yabwe.github.io/medium-editor/) allows auto-styling of words. The auto-styling is defined by a configuration object, which gets passed to the constructur.
 
@@ -37,44 +37,70 @@ AutoStyleExtension = require('medium-editor-auto-style-extension');
 <script type="text/javascript" src="<path>/auto-style.js"></script>
 
 <style type="text/css">
-    .my-class {
-        border: 1px solid red;
-        background-color: yellow;
+    .combine-class-one {
+        border: 2px dotted green;
+    }
+    .combine-class-two {
+        background-color:gold;
     }
 </style>
 
-<div class="editable">yellöw, gräy, gray, grey, RED, oraNGE, 汉语/漢語</div>
+<div class="editable">CömbineStyleAndClass, CombineStyles, CombineClasses, gräy gräyx, oraNGE oraNGEX, ÖÖÖ</div>
 
 <script type="text/javascript">
 var editor = new MediumEditor('.editable', {
     extensions: {
-        'auto-style': new AutoStyleExtension({
+        'auto-highlight': new AutoStyleExtension({
 
             config: {
                 sectionA: {
                     matchcase: false,
                     wordsonly: false,
-                    class: 'my-class',
+                    class: 'combine-class-one',
                     style: 'color:red;',
-                    words: ['yellöw']
+                    words: ['CömbineStyleAndClass']
                 },
                 sectionB: {
-                    matchcase: true,
-                    wordsonly: true,
-                    style: 'color:green;background-color:red;font-weight:bold;',
-                    words: ['RED']
-                },
-                sectionC: {
                     matchcase: false,
                     wordsonly: false,
                     style: 'background-color:#aaa;',
-                    words: ['gräy', 'gray', 'grey']
+                    words: ['gräy']
+                },
+                sectionC: {
+                    matchcase: true,
+                    wordsonly: true,
+                    style: 'background-color:orange;',
+                    words: ['oraNGE']
                 },
                 sectionD: {
                     matchcase: true,
                     wordsonly: true,
-                    style: 'background-color:orange;',
-                    words: ['oraNGE', '汉语/漢語']
+                    class: 'combine-class-one',
+                    words: ['CombineClasses']
+                },
+                sectionE: {
+                    matchcase: true,
+                    wordsonly: true,
+                    class: 'combine-class-two',
+                    words: ['CombineClasses']
+                },
+                sectionF: {
+                    matchcase: true,
+                    wordsonly: true,
+                    style: 'border: 2px dotted green;',
+                    words: ['CombineStyles']
+                },
+                sectionG: {
+                    matchcase: true,
+                    wordsonly: true,
+                    style: 'background-color:gold;',
+                    words: ['CombineStyles']
+                },
+                sectionH: {
+                    matchcase: false,
+                    wordsonly: false,
+                    style: 'background-color:silver;',
+                    words: ['ÖÖÖ']
                 }
             }
 
@@ -103,7 +129,7 @@ setConfigSection: function(sectionName, sectionObject) {
 
 ### Configuration at Runtime: Example
 
-Changing the configuration causes re-evaluation of the content implicitly.
+Changing the configuration does not cause re-evaluation of the content implicitly. Call the function `applyStyles()` manually to re-evaluate the style of the content.
 
 
 ```javascript
@@ -112,12 +138,24 @@ var extension = editor.getExtensionByName('auto-style');
 extension.setConfigSection('your-section-name', {
     matchcase: false,
     wordsonly: true,
-    //class: 'my-class',
+    //class: 'a-class',
     style: 'color:red;',
     words: ['some','red','words']
 });
+
+extension.applyStyles();
 ```
+
 ## Changelog
+
+<strong>2.0.0</strong>
+
+- Call `extension.applyStyles()` to apply configuration modification made during runtime
+- Tried to fix some weired unicode behavious during word matching.
+
+<strong>1.1.0</strong>
+
+- Allows for CSS- and Class-combination of words present in more than one section.
 
 <strong>1.0.0</strong>
 

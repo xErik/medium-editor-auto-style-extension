@@ -31,14 +31,16 @@
     </ol>
 
     <h2>Playground</h2>
-    <p>Play around with the words <i>yellöw, gräy, gray, grey, RED, oraNGE, 汉语/漢語</i>.</p>
+    <p>Play around with the words <i>CömbineStyleAndClass, CombineStyles, CombineClasses, gräy gräyx, oraNGE oraNGEX, </i>.</p>
     <style type="text/css">
-        .my-class {
-            border: 1px solid red;
-            background-color: yellow;
+        .combine-class-one {
+            border: 2px dotted green;
+        }
+        .combine-class-two {
+            background-color:gold;
         }
     </style>
-    <div id="demo" style="border:1px gray solid;width:500px;" class="editable">yellöw, gräy, gray, grey, RED, oraNGE, 汉语/漢語</div>
+    <div id="demo" style="border:1px gray solid;width:500px;" class="editable">CömbineStyleAndClass, CombineStyles, CombineClasses, gräy gräyx, oraNGE oraNGEX, ÖÖÖ</div>
     <script>
 
             var editor = new MediumEditor('.editable', {
@@ -49,27 +51,51 @@
                             sectionA: {
                                 matchcase: false,
                                 wordsonly: false,
-                                class: 'my-class',
+                                class: 'combine-class-one',
                                 style: 'color:red;',
-                                words: ['yellöw']
+                                words: ['CömbineStyleAndClass']
                             },
                             sectionB: {
-                                matchcase: true,
-                                wordsonly: true,
-                                style: 'color:green;background-color:red;font-weight:bold;',
-                                words: ['RED']
-                            },
-                            sectionC: {
                                 matchcase: false,
                                 wordsonly: false,
                                 style: 'background-color:#aaa;',
-                                words: ['gräy', 'gray', 'grey']
+                                words: ['gräy']
+                            },
+                            sectionC: {
+                                matchcase: true,
+                                wordsonly: true,
+                                style: 'background-color:orange;',
+                                words: ['oraNGE']
                             },
                             sectionD: {
                                 matchcase: true,
                                 wordsonly: true,
-                                style: 'background-color:orange;',
-                                words: ['oraNGE', '汉语/漢語']
+                                class: 'combine-class-one',
+                                words: ['CombineClasses']
+                            },
+                            sectionE: {
+                                matchcase: true,
+                                wordsonly: true,
+                                class: 'combine-class-two',
+                                words: ['CombineClasses']
+                            },
+                            sectionF: {
+                                matchcase: true,
+                                wordsonly: true,
+                                style: 'border: 2px dotted green;',
+                                words: ['CombineStyles']
+                            },
+                            sectionG: {
+                                matchcase: true,
+                                wordsonly: true,
+                                style: 'background-color:gold;',
+                                words: ['CombineStyles']
+                            },
+                            sectionH: {
+                                matchcase: false,
+                                wordsonly: false,
+                                style: 'background-color:silver;',
+                                words: ['ÖÖÖ']
                             }
                         }
 
@@ -81,44 +107,68 @@
     <br>The editor seems sometimes to remember the last HTML-color settings. Will look into it.)</p>
 
     <h2>Configuration</h2>
+    Style
     <pre>
-&lt;style type="text/css"&gt;
-    .my-class {
-        border: 1px solid red;
-        background-color: yellow;
+.combine-class-one {
+    border: 2px dotted green;
+}
+.combine-class-two {
+    background-color:gold;
+}
+    </pre>
+    Config
+    <pre>
+config: {
+    sectionA: {
+        matchcase: false,
+        wordsonly: false,
+        class: 'combine-class-one',
+        style: 'color:red;',
+        words: ['CömbineStyleAndClass']
+    },
+    sectionB: {
+        matchcase: false,
+        wordsonly: false,
+        style: 'background-color:#aaa;',
+        words: ['gräy']
+    },
+    sectionC: {
+        matchcase: true,
+        wordsonly: true,
+        style: 'background-color:orange;',
+        words: ['oraNGE']
+    },
+    sectionD: {
+        matchcase: true,
+        wordsonly: true,
+        class: 'combine-class-one',
+        words: ['CombineClasses']
+    },
+    sectionE: {
+        matchcase: true,
+        wordsonly: true,
+        class: 'combine-class-two',
+        words: ['CombineClasses']
+    },
+    sectionF: {
+        matchcase: true,
+        wordsonly: true,
+        style: 'border: 2px dotted green;',
+        words: ['CombineStyles']
+    },
+    sectionG: {
+        matchcase: true,
+        wordsonly: true,
+        style: 'background-color:gold;',
+        words: ['CombineStyles']
+    },
+    sectionH: {
+        matchcase: false,
+        wordsonly: false,
+        style: 'background-color:silver;',
+        words: ['ÖÖÖ']
     }
-&lt;/style&gt;
-
-&lt;script&gt;
-
-    config: {
-        sectionA: {
-            matchcase: false,
-            wordsonly: false,
-            class: 'my-class',
-            style: 'color:red;',
-            words: ['yellow']
-        },
-        sectionB: {
-            matchcase: true,
-            wordsonly: true,
-            style: 'color:red;',
-            words: ['RED']
-        },
-        sectionC: {
-            matchcase: false,
-            wordsonly: false,
-            style: 'background-color:gray;',
-            words: ['gray', 'grey']
-        },
-        sectionD: {
-            matchcase: true,
-            wordsonly: true,
-            style: 'background-color:orange;',
-            words: ['oraNGE', '汉语/漢語']
-        }
-    }
-&lt;/script&gt;
+}
     </pre>
 
 </body>
