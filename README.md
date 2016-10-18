@@ -119,10 +119,19 @@ Additional methods allow manipulation of sections during runtime
 getConfig: function() {
   ...
 },
+setConfig: function(config) {
+ ...
+},
 removeConfigSection: function(sectionName) {
   ...
 },
 setConfigSection: function(sectionName, sectionObject) {
+  ...
+},
+
+// Applies all config styles to the text.
+// Useful for triggering via external code.
+applyStyles: function() {
   ...
 }
 ```

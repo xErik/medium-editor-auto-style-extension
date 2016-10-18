@@ -29,6 +29,9 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             words: ['oraNGE']
         }
     },
+    setConfig: function(config) {
+        this.config = config;
+    },
     getConfig: function() {
         return this.config;
     },
@@ -63,14 +66,23 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
 
     applyStyles: function() {
         this.getEditorElements().forEach(function(el) {
-            this.performStyling(el);
+            // Cursor position wrong, if div is empty: after the first
+            // typed word, the cursor jumps to the beginning of the word
+            // (position = 0). Instead cursor position should be after the
+            // word.
+            var sel = this.base.exportSelection();
+            var res = this.performStyling(el);
+            this.base.importSelection(sel, true);
+
         }, this);
     },
-
+    disableEventHandling: undefined,
     regexColors: [],
     init: function() {
         MediumEditor.Extension.prototype.init.apply(this, arguments);
-        this.disableEventHandling = false;
+        if (this.disableEventHandling === undefined) {
+            this.disableEventHandling = false;
+        }
 
         this.processConfig();
         this.applyStyles();
@@ -80,6 +92,9 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
     },
 
     onBlur: function(blurEvent, editable) {
+        if (this.disableEventHandling) {
+            return;
+        }
         this.performStyling(editable);
     },
 
@@ -167,24 +182,10 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         for (var matchIndex = 0; matchIndex < matches.length; matchIndex++) {
             var matchingTextNodes = MediumEditor.util.findOrCreateMatchingTextNodes(this.document, element,
                 matches[matchIndex]);
-            /*if (this.shouldNotStyle(matchingTextNodes)) {
-                continue;
-            }*/
             this.createAutoStyle(matchingTextNodes, matches[matchIndex].style, matches[matchIndex].clazz);
         }
         return linkCreated;
     },
-
-    /*shouldNotStyle: function(textNodes) {
-        var shouldNotStyle = false;
-        for (var i = 0; i < textNodes.length && shouldNotStyle === false; i++) {
-            shouldNotStyle = MediumEditor.util.traverseUp(textNodes[i], function(node) {
-                return node.nodeName.toLowerCase() === 'span' &&
-                    node.getAttribute && node.getAttribute('data-auto-style') === 'true';
-            });
-        }
-        return shouldNotStyle;
-    },*/
 
     findStyleableText: function(contenteditable) {
 
@@ -201,7 +202,7 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
                 var linkRegExp = rc.regex;
                 var pos = 0;
 
-                while((match = XRegExp.exec(textContent, linkRegExp, pos)) !== null) {
+                while ((match = XRegExp.exec(textContent, linkRegExp, pos)) !== null) {
 
                     pos = match.index + 1;
 
@@ -252,8 +253,6 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
 
         if (node !== false) {
 
-            node = node;
-            //MediumEditor.util.moveTextRangeIntoElement(textNodes[0], textNodes[textNodes.length - 1], node);
             if (style !== undefined) {
                 if (node.getAttribute('style') === null) {
                     node.setAttribute('style', style);
@@ -276,7 +275,6 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
                 node.setAttribute('style', style);
             }
             if (clazz !== undefined) {
-                //node.setAttribute('class', clazz);
                 node.className += clazz;
             }
             node.setAttribute('data-auto-style', 'true');
