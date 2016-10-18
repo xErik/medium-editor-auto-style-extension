@@ -40,10 +40,8 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         this.processConfig();
     },
     setConfigSection: function(sectionName, sectionObject) {
-        if (sectionObject.words && sectionObject.words.length > 0) {
             this.config[sectionName] = sectionObject;
             this.processConfig();
-        }
     },
     processConfig: function() {
         this.regexColors = [];
