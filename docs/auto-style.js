@@ -4483,12 +4483,13 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         this.processConfig();
     },
     setConfigSection: function(sectionName, sectionObject) {
-            this.config[sectionName] = sectionObject;
-            this.processConfig();
+        this.config[sectionName] = sectionObject;
+        this.processConfig();
     },
     processConfig: function() {
         this.regexColors = [];
         var sectionKeys = Object.keys(this.config);
+
         for (var k = 0; k < sectionKeys.length; k++) {
 
             var sectionKey = sectionKeys[k];
@@ -4500,7 +4501,8 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
             this.regexColors.push({
                 style: section.style,
                 clazz: section.class,
-                regex: new XRegExp(words, matchcase) // new XRegExp(words, matchcase)
+                regex: new XRegExp(words, matchcase),
+                regexPlain: section.words.join('|')
             });
         }
     },
@@ -4628,8 +4630,20 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
         return linkCreated;
     },
 
-    findStyleableText: function(contenteditable) {
+    hashArr: [],
 
+    checkHash: function(hash) {
+        if (this.hashArr.indexOf(hash) > -1) {
+            return false;
+        } else {
+            this.hashArr.push(hash);
+
+        }
+        return true;
+    },
+
+    findStyleableText: function(contenteditable) {
+        this.hashArr = [];
         var textContent = contenteditable.textContent.trim(),
             match = null,
             matches = [];
@@ -4640,34 +4654,47 @@ var AutoStyleExtension = MediumEditor.Extension.extend({
                 var rc = this.regexColors[i];
                 var style = rc.style;
                 var clazz = rc.clazz;
-                var linkRegExp = rc.regex;
+                var regex = rc.regex;
+                var regexPlain = rc.regexPlain;
                 var pos = 0;
 
-                while ((match = XRegExp.exec(textContent, linkRegExp, pos)) !== null) {
+                while ((match = XRegExp.exec(textContent, regex, pos)) !== null) {
 
                     pos = match.index + 1;
 
                     if (match.length === 2) {
                         // wordsonly: false
+                        // HACK!
+                        if (match[0] === "")
+                            continue;
                         var matchEnd = match.index + match[0].length;
-                        matches.push({
-                            word: match[0],
-                            clazz: clazz,
-                            style: style,
-                            start: match.index,
-                            end: matchEnd
-                        });
+                        var hash = match.index + '-' + matchEnd;
+                        if (this.checkHash(hash)) {
+                            matches.push({
+                                word: match[0],
+                                clazz: clazz,
+                                style: style,
+                                start: match.index,
+                                end: matchEnd
+                            });
+                        }
                     } else if (match.length === 4) {
                         // wordsonly: true
+                        // HACK!
+                        if (match[2] === "")
+                            continue;
                         var start = match.index + match[1].length;
-                        var end = start + match[2].length;
-                        matches.push({
-                            word: match[2],
-                            clazz: clazz,
-                            style: style,
-                            start: start,
-                            end: end
-                        });
+                        var matchEnd = start + match[2].length;
+                        var hash = start + '-' + matchEnd;
+                        if (this.checkHash(hash)) {
+                            matches.push({
+                                word: match[2],
+                                clazz: clazz,
+                                style: style,
+                                start: start,
+                                end: matchEnd
+                            });
+                        }
                     } else {
                         if (window.console) {
                             window.console.error('Cannot process: ' + match);
